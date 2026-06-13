@@ -322,7 +322,7 @@ Note: code comments and CLI help strings are written in Korean. "설계 §N" /
 
 ## Authors
 
-Kyung-Bo Kim, Hyeon-Seok Jang, So-Hyeon Kim, and Gyu-Chae Jung.
+Kyung-Bo Kim, Hyun-Seok Jang, So-Hyeon Kim, and Gyu-Chae Jung.
 
 ## Attribution & license notices
 
