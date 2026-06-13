@@ -14,6 +14,13 @@ A webcam+RTMPose teacher generates pseudo-labels; the student model regresses
 joint coordinates from 50ms windows of CSI amplitude tensors — once trained,
 no camera is needed.
 
+<p align="center">
+  <img src="figures/fall-demo.gif" alt="Real-time CSI pose + fall-detection demo" width="600"><br>
+  <em>Real-time demo — the green 18-joint skeleton is inferred from WiFi CSI alone
+  (no camera at inference). The top banner shows the fall detector firing:
+  <strong>PRESENT | ALARM</strong>.</em>
+</p>
+
 ## Pipeline
 
 ```
@@ -128,6 +135,13 @@ are absorbed by per-link L2 normalization.
 Recommended setup: capture (serial/webcam) on native Windows, training and
 real-time inference on WSL2 (ext4) — for timestamp unification and I/O
 performance. A single-OS setup works as well.
+
+<p align="center">
+  <img src="figures/room-layout.png" alt="Measurement room layout" width="560"><br>
+  <em>Measurement room (3.45 × 5.65 m). The TX array (bottom, facing up) and the
+  RX + camera cluster (top, facing down) face each other along the long axis;
+  the mattress at the center is the fall point.</em>
+</p>
 
 ## Getting started
 
