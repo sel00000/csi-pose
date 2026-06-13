@@ -280,7 +280,7 @@ cd firmware/rx && idf.py set-target esp32s3 build flash    # RX 3대
 
 ## 저자
 
-Kyung-Bo Kim, Hyeon-Seok Jang, So-Hyeon Kim, Gyu-Chae Jung.
+Kyung-Bo Kim, Hyun-Seok Jang, So-Hyeon Kim, Gyu-Chae Jung.
 
 ## 출처 및 라이선스 고지
 
