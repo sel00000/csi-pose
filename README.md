@@ -36,6 +36,15 @@ no camera is needed.
 ⑤ rt/        real-time pose estimation (~20Hz) + fall-detection demo
 ```
 
+## System architecture
+
+<p align="center">
+  <img src="figures/fig_arch.png" alt="System architecture" width="660"><br>
+  <em>Three layers: RF hardware (ESP32-S3 TX/RX), native-Windows capture (single
+  host clock), and WSL2 compute (training &amp; realtime). Solid = realtime path,
+  dashed = offline. (Diagram labels in Korean.)</em>
+</p>
+
 ## What it detects
 
 The model outputs a continuous 18-joint 2D skeleton; two higher-level signals
@@ -61,6 +70,18 @@ Replay-demo result: **10 of 11 staged falls detected, 2 false positives**
 > check is currently disabled (per-posture motion-energy distributions
 > overlapped), so confirmation relies on pose geometry. Treat this as a working
 > demo, **not a validated medical or safety device.**
+
+<p align="center">
+  <img src="figures/fig_fsm.png" alt="Fall-detection state machine" width="660"><br>
+  <em>The fall-detection state machine (IDLE → IMPACT → ALARM) with its rules and
+  release conditions. (Diagram labels in Korean.)</em>
+</p>
+
+<p align="center">
+  <img src="figures/fig9_fall_timeline.png" alt="Fall-detection replay timeline" width="660"><br>
+  <em>Fall-detection replay over a 720 s session with 11 scripted falls: recall
+  10/11, precision 10/12, median true-positive rise time 0.34 s.</em>
+</p>
 
 ## Key idea 1 — Time synchronization (aligning heterogeneous clocks)
 
@@ -125,6 +146,56 @@ quantities, so **inter-link phase is never used as a feature**; only amplitude
 is (intra-link phase shape is an opt-in ablation). Per-board AGC differences
 are absorbed by per-link L2 normalization.
 
+## Model
+
+<p align="center">
+  <img src="figures/fig_model.png" alt="WiSPPN-ESP model" width="720"><br>
+  <em>WiSPPN-ESP — a ResNet-18-style encoder over the (280,3,3) CSI amplitude
+  tensor, ending in either a PAM decode head (18×18 adjacency matrix) or a vector
+  head that regresses the 18 joint coordinates directly. (Diagram labels in Korean.)</em>
+</p>
+
+## Results
+
+> Single session, single subject, single room (time-ordered 80/20 split). These
+> are working-demo numbers, not a cross-environment benchmark — see the
+> [technical report](#technical-report) for the full scope and limitations.
+
+<p align="center">
+  <img src="figures/fig3_motion_correlation.png" alt="CSI–motion correlation" width="560"><br>
+  <em>The CSI motion statistic vs. camera-measured human motion: Pearson
+  <strong>r = 0.603</strong> (n = 4,391); the lagged cross-correlation peaks at
+  −0.1 s, confirming sub-100 ms CSI–video alignment.</em>
+</p>
+
+<p align="center">
+  <img src="figures/fig1_csi_spectrogram_motion.png" alt="CSI spectrogram and motion" width="660"><br>
+  <em>CSI amplitude spectrogram (one link, 56 subcarriers) with the CSI motion
+  statistic tracking the vision-derived keypoint speed.</em>
+</p>
+
+<p align="center">
+  <img src="figures/fig7_ablation_gates.png" alt="Ablation vs gates" width="560"><br>
+  <em>Input-representation ablation: best run PCK@0.2 = 0.495 / PCK@0.5 = 0.897 —
+  above the absolute gate (0.35) and both baselines (mean-pose 0.185, kNN 0.321).</em>
+</p>
+
+<p align="center">
+  <img src="figures/fig8_perjoint_pck.png" alt="Per-joint PCK" width="560"><br>
+  <em>Per-joint PCK@0.2 vs. baselines — the learned model wins on motion-rich face
+  and arm joints, evidence it learns motion-related channel features rather than
+  replaying a static pose.</em>
+</p>
+
+<p align="center">
+  <img src="figures/fig4_rssi_presence.png" alt="RSSI vs occupancy" width="560"><br>
+  <em>Per-link RSSI distributions, empty vs. occupied — occupancy widens every
+  link's distribution, motivating RSSI as an auxiliary input feature.</em>
+</p>
+
+More figures (subcarrier/link correlation, phase sanitization, training curves):
+see [`docs/figures/`](docs/figures/).
+
 ## Hardware requirements
 
 - 6 ESP32-S3 dev boards (3 TX + 3 RX, built with ESP-IDF — HT20, 56 subcarriers)
@@ -164,6 +235,13 @@ Naming convention: `csi_*` directories (`csi_host/`, `csi_pipe/`, `csi_train/`,
 
 Note: code comments and CLI help strings are written in Korean. "설계 §N" /
 "스펙 …" in comments refer to section numbers of an internal design document.
+
+## Technical report
+
+A full 25-page technical report — system design, mathematical formulation
+(26 equations), the data-collection layer, time alignment, the teacher/student
+pipeline, the fall state machine, and measured M0–M3 results — is attached to the
+release: **[Technical report (PDF, Korean)](https://github.com/sel00000/csi-pose/releases/tag/paper-2026-06-12)**.
 
 ## Authors
 
